@@ -10,6 +10,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from configparser import ConfigParser
+from vertifyCodeImage import getImage
 
 
 
@@ -27,8 +28,9 @@ class UCASEvaluate:
         self.enroll = cf.getboolean('action', 'enroll')
         self.evaluate = cf.getboolean('action', 'evaluate')
         self.select_bat = cf.getboolean('action', 'select_bat')
-
+        self.certCode = None
         self.loginPage = 'http://sep.ucas.ac.cn'
+        self.mainPage = self.loginPage+'/appStore'
         self.loginUrl = self.loginPage + '/slogin'
         self.courseSystem = self.loginPage + '/portal/site/226/821'
         self.courseBase = 'http://jwxk.ucas.ac.cn'
@@ -44,29 +46,43 @@ class UCASEvaluate:
         self.enrollCount = {}
         self.headers = {
             'Host': 'sep.ucas.ac.cn',
-            'Connection': 'keep-alive',
-            'Pragma': 'no-cache',
-            'Cache-Control': 'no-cache',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
             'Upgrade-Insecure-Requests': '1',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36',
-            'Accept-Encoding': 'gzip, deflate, sdch',
-            'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
+            'Cache-Control':'max-age=0',
+            'Accept-Encoding': 'gzip, deflate',
+            'Origin':'http://sep.ucas.ac.cn',
+            'Referer':'http://sep.ucas.ac.cn/',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Sec-Metadata':'cause="user-activated", destination="document", target="top-level", site="same-origin"'
+
         }
 
         self.s = requests.Session()
         loginPage = self.s.get(self.loginPage, headers=self.headers)
         self.cookies = loginPage.cookies
+        print("Cookies",self.cookies)
 
     def login(self):
+
+        self.certCode = self.getCertCode()
         postdata = {
             'userName': self.username,
             'pwd': self.password,
+            'certCode':self.certCode,
             'sb': 'sb'
         }
         self.s.post(self.loginUrl, data=postdata, headers=self.headers)
+        print("S response: ",self.s.cookies)
+
         if 'sepuser' in self.s.cookies.get_dict(): return True
         return False
+    def getCertCode(self):
+        getImage()
+        code = input("请输入看到的验证码: ")
+        print("获取到的验证码为: ",code)
+        return code
+
 
     def getMessage(self, restext):
         css_soup = BeautifulSoup(restext, 'html.parser')

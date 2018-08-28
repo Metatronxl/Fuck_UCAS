@@ -9,25 +9,35 @@ from io import BytesIO
 from pytesseract import image_to_string
 import os
 import random
+import time
+
+
+def get_time_stamp():
+    t = time.time()
+    return str(int(round(t * 1000)))
+
+
 
 def getImage():
-    response = requests.get("http://sep.ucas.ac.cn/changePic")
+
+    requests.get("http://sep.ucas.ac.cn/changePic")
+    response = requests.get("http://sep.ucas.ac.cn/changePic?code="+get_time_stamp())
     img = Image.open(BytesIO(response.content))
     img.show()
 
-    #降噪处理
-    threshold = 140
-    table = []
-    for i in range(256):
-        if i<threshold:
-            table.append(0)
-        else:
-            table.append(1)
-    imgry = img.convert('L')
-    out = imgry.point(table,'1')
-
-    text = image_to_string(out)
-    print("test:",text)
+    # #降噪处理
+    # threshold = 140
+    # table = []
+    # for i in range(256):
+    #     if i<threshold:
+    #         table.append(0)
+    #     else:
+    #         table.append(1)
+    # imgry = img.convert('L')
+    # out = imgry.point(table,'1')
+    #
+    # text = image_to_string(out)
+    # print("test:",text)
 
 def makdir(path):
     path = path.strip()
