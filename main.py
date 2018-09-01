@@ -28,7 +28,6 @@ class UCASEvaluate:
         self.enroll = cf.getboolean('action', 'enroll')
         self.evaluate = cf.getboolean('action', 'evaluate')
         self.select_bat = cf.getboolean('action', 'select_bat')
-        self.certCode = None
         self.loginPage = 'http://sep.ucas.ac.cn'
         self.mainPage = self.loginPage+'/appStore'
         self.loginUrl = self.loginPage + '/slogin'
@@ -65,24 +64,14 @@ class UCASEvaluate:
 
     def login(self):
 
-        self.certCode = self.getCertCode()
         postdata = {
             'userName': self.username,
             'pwd': self.password,
-            'certCode':self.certCode,
             'sb': 'sb'
         }
         self.s.post(self.loginUrl, data=postdata, headers=self.headers)
-        print("S response: ",self.s.cookies)
-
         if 'sepuser' in self.s.cookies.get_dict(): return True
         return False
-    def getCertCode(self):
-        getImage()
-        code = input("请输入看到的验证码: ")
-        print("获取到的验证码为: ",code)
-        return code
-
 
     def getMessage(self, restext):
         css_soup = BeautifulSoup(restext, 'html.parser')
